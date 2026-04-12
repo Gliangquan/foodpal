@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: foodpal-backend
+  
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:mysql://mysql:3306/foodpal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
+    username: ${DATASOURCE_USERNAME:root}
+    password: ${DATASOURCE_PASSWORD:liangquan0302}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+  
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  web:
+    resources:
+      static-locations: file:${file.storage.path:~/uploads}/
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+server:
+  port: 9901
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    min-response-size: 1024
+
+logging:
+  level:
+    root: info
+    com.jcen.medpal: debug
+    org.springframework.web: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 10
+
+# 文件存储配置
+file:
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket-name: ${MINIO_BUCKET_NAME:foodpal-project}
+
+# JWT 配置
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm}
+  expiration: 86400000  # 24 小时（毫秒）
+
+# 微信小程序配置
+wechat:
+  app-id: ${WECHAT_APP_ID:}
+  secret: ${WECHAT_SECRET:}
+  login-url: https://api.weixin.qq.com/sns/jscode2session
+  session-key-url: https://api.weixin.qq.com/sns/oauth2/access_token
+
+# 应用配置
+app:
+  name: FoodPal-backend
+  version: 1.0.0
+  description: FoodPal 高校食堂通 - Spring Boot 后端服务
+
+  public-base-url: ${APP_PUBLIC_BASE_URL:http://107.148.176.142:9040}
