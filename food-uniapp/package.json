@@ -5,7 +5,7 @@
   "scripts": {
     "dev:h5": "UNI_INPUT_DIR=. uni -p h5",
     "build:h5": "UNI_INPUT_DIR=. uni build -p h5",
-    "preview:h5": "vite preview --host 0.0.0.0 --port 8080"
+    "preview:h5": "vite preview --host 0.0.0.0 --port 19943"
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-5000620260331001",

@@ -29,15 +29,15 @@ export default defineConfig({
     },
   },
   server: {
-    port: 9991,
+    port: 19942,
     proxy: {
       '/api': {
-        target: 'http://localhost:9901',
+        target: 'http://localhost:19941',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
       },
       '/ws': {
-        target: 'ws://localhost:9901',
+        target: 'ws://localhost:19941',
         ws: true,
         changeOrigin: true,
       },

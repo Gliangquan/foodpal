@@ -3,9 +3,9 @@ spring:
     name: foodpal-backend
   
   datasource:
-    url: ${DATASOURCE_URL:jdbc:mysql://mysql:3306/foodpal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
+    url: ${DATASOURCE_URL:jdbc:mysql://mysql:3307/foodpal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
     username: ${DATASOURCE_USERNAME:root}
-    password: ${DATASOURCE_PASSWORD:liangquan0302}
+    password: ${DATASOURCE_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   
   jpa:
@@ -38,7 +38,7 @@ mybatis-plus:
       id-type: auto
 
 server:
-  port: 9901
+  port: 19941
   servlet:
     context-path: /api
   compression:
