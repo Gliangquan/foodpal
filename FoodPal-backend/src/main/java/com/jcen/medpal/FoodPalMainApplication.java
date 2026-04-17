@@ -18,13 +18,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @Slf4j
-public class MainApplication {
+public class FoodPalMainApplication {
 
     @Value("${app.public-base-url:http://107.148.176.142:9040}")
     private String publicBaseUrl;
 
     public static void main(String[] args) {
-        SpringApplication.run(MainApplication.class, args);
+        SpringApplication.run(FoodPalMainApplication.class, args);
     }
 
     @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
