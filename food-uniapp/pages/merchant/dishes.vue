@@ -34,14 +34,17 @@
 
     <!-- 搜索和筛选 -->
     <uni-card :border="false" padding="16" style="margin-bottom: 16rpx;">
-      <uni-search-bar
-        v-model="keyword"
-        placeholder="搜索菜品名称"
-        cancel-button="none"
-        @confirm="loadDishes(true)"
-        @clear="loadDishes(true)"
-        class="search-bar"
-      />
+      <view class="search-row">
+        <uni-search-bar
+          v-model="keyword"
+          placeholder="搜索菜品名称"
+          cancel-button="none"
+          @confirm="loadDishes(true)"
+          @clear="loadDishes(true)"
+          class="search-bar"
+        />
+        <button class="search-btn" size="mini" type="primary" @tap="loadDishes(true)">搜索</button>
+      </view>
       <uni-segmented-control
         :current="statusIndex"
         :values="['全部', '可供应', '已售罄']"
@@ -254,7 +257,7 @@ export default {
           current: this.current,
           size: this.pageSize,
           supplyStatus,
-          keyword: this.keyword || undefined
+          keyword: this.keyword.trim() || undefined
         });
 
         const records = page.records || [];
@@ -527,8 +530,25 @@ export default {
   color: #6e7891;
 }
 
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
 .search-bar {
+  flex: 1;
   margin-bottom: 0;
+}
+
+.search-btn {
+  flex-shrink: 0;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 28rpx;
+  border-radius: 36rpx;
+  background: #2f65f9;
+  color: #fff;
 }
 
 .batch-bar {

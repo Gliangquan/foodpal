@@ -216,7 +216,7 @@ export default {
         { value: '', text: '全部状态' },
         { value: 'pending_review', text: '待审核' },
         { value: 'pending_rectify', text: '待整改' },
-        { value: 'rectified', text: '已整改' },
+        { value: 'rectified', text: '待复核' },
         { value: 'completed', text: '已完成' },
         { value: 'rejected', text: '已驳回' }
       ],
@@ -313,7 +313,7 @@ export default {
       const map = {
         pending_review: '待审核',
         pending_rectify: '待整改',
-        rectified: '已整改',
+        rectified: '待复核',
         completed: '已完成',
         rejected: '已驳回'
       };
@@ -329,9 +329,9 @@ export default {
     },
     getProgressText(item) {
       if (!item) return '待处理';
-      if (item.status === 'pending_review') return '等待监督管理员审核';
+      if (item.status === 'pending_review') return '待监督员处理';
       if (item.status === 'pending_rectify') return item.rectifyRequirement || '已通知商户整改';
-      if (item.status === 'rectified') return item.rectifyResult || '商户已提交整改结果，等待复核';
+      if (item.status === 'rectified') return item.rectifyResult || '商户已提交整改结果，待监督员复核';
       if (item.status === 'completed') return item.feedback || item.rectifyResult || '投诉已处理完成';
       if (item.status === 'rejected') return item.feedback || '投诉已驳回';
       return item.processProgress || '待处理';

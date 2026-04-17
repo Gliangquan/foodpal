@@ -58,12 +58,24 @@
         <a-descriptions-item label="投诉编号">{{ currentComplaint.complaintNo }}</a-descriptions-item>
         <a-descriptions-item label="投诉标题">{{ currentComplaint.complaintTitle }}</a-descriptions-item>
         <a-descriptions-item label="投诉内容">{{ currentComplaint.complaintContent }}</a-descriptions-item>
+        <a-descriptions-item label="投诉图片">
+          <a-space wrap v-if="evidenceImages.length">
+            <a-image
+              v-for="(url, index) in evidenceImages"
+              :key="`${url}-${index}`"
+              :src="url"
+              :width="140"
+              :preview="true"
+            />
+          </a-space>
+          <span v-else>-</span>
+        </a-descriptions-item>
         <a-descriptions-item label="投诉人">{{ currentComplaint.studentName }}</a-descriptions-item>
         <a-descriptions-item label="被投诉商户">{{ currentComplaint.merchantName }}</a-descriptions-item>
         <a-descriptions-item label="当前状态">
           <a-tag :color="statusColor(currentComplaint.status)">{{ statusText(currentComplaint.status) }}</a-tag>
         </a-descriptions-item>
-        <a-descriptions-item label="处理进度">{{ currentComplaint.processProgress || '待处理' }}</a-descriptions-item>
+        <a-descriptions-item label="处理说明">{{ progressText(currentComplaint) }}</a-descriptions-item>
         <a-descriptions-item label="整改要求">{{ currentComplaint.rectifyRequirement || '-' }}</a-descriptions-item>
         <a-descriptions-item label="整改结果">{{ currentComplaint.rectifyResult || '-' }}</a-descriptions-item>
         <a-descriptions-item label="学生反馈">{{ currentComplaint.feedback || '-' }}</a-descriptions-item>
@@ -112,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { message } from 'ant-design-vue';
 import {
   getComplaintRanking,
@@ -121,6 +133,7 @@ import {
   exportComplaints,
   type ComplaintItem
 } from '../../api';
+import { normalizeImageUrl } from '../../utils/image';
 
 const columns = [
   { title: '编号', dataIndex: 'complaintNo', key: 'complaintNo', width: 160 },
@@ -164,10 +177,34 @@ const processForm = reactive({
   feedback: ''
 });
 
+const parseEvidenceUrls = (raw?: string) => {
+  if (!raw) return [] as string[];
+  const source = raw.trim();
+  if (!source) return [] as string[];
+
+  const normalizeList = (list: unknown[]) => list
+    .map(item => normalizeImageUrl(typeof item === 'string' ? item.trim() : String(item ?? '').trim()))
+    .filter(Boolean);
+
+  if (source.startsWith('[') && source.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(source);
+      if (Array.isArray(parsed)) {
+        return normalizeList(parsed);
+      }
+    } catch {
+    }
+  }
+
+  return normalizeList(source.split(','));
+};
+
+const evidenceImages = computed(() => parseEvidenceUrls(currentComplaint.value?.evidenceUrls));
+
 const statusText = (value?: string) => {
   if (value === 'pending_review') return '待审核';
   if (value === 'pending_rectify') return '待整改';
-  if (value === 'rectified') return '已整改';
+  if (value === 'rectified') return '待复核';
   if (value === 'completed') return '已完成';
   if (value === 'rejected') return '已驳回';
   return value || '-';
@@ -180,6 +217,16 @@ const statusColor = (value?: string) => {
   if (value === 'completed') return 'green';
   if (value === 'rejected') return 'red';
   return 'default';
+};
+
+const progressText = (record?: ComplaintItem | null) => {
+  if (!record) return '待处理';
+  if (record.status === 'pending_review') return '待监督员处理';
+  if (record.status === 'pending_rectify') return record.rectifyRequirement || '已通知商户整改';
+  if (record.status === 'rectified') return record.rectifyResult || '商户已提交整改结果，待监督员复核';
+  if (record.status === 'completed') return record.feedback || record.rectifyResult || '投诉已处理完成';
+  if (record.status === 'rejected') return record.feedback || '投诉已驳回';
+  return record.processProgress || '待处理';
 };
 
 const refreshList = async () => {

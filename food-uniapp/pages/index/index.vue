@@ -2,14 +2,17 @@
   <view class="page-content">
     <!-- 搜索和筛选区域 -->
     <uni-card :border="false" padding="16" style="margin: 0 0 16rpx 0;">
-      <uni-search-bar
-        v-model="keyword"
-        placeholder="搜索菜品名称或商户"
-        cancel-button="none"
-        @confirm="loadDishes(true)"
-        @clear="loadDishes(true)"
-        class="search-bar"
-      />
+      <view class="search-row">
+        <uni-search-bar
+          v-model="keyword"
+          placeholder="搜索菜品名称或商户"
+          cancel-button="none"
+          @confirm="loadDishes(true)"
+          @clear="loadDishes(true)"
+          class="search-bar"
+        />
+        <button class="search-btn" size="mini" type="primary" @tap="loadDishes(true)">搜索</button>
+      </view>
       <view style="margin-top: 16rpx;">
         <uni-segmented-control
           :current="categoryIndex"
@@ -369,7 +372,21 @@ export default {
     async loadRecommend() {
       try {
         const page = await canteenApi.recommendDishes(10);
-        this.recommendList = page || [];
+        const list = Array.isArray(page) ? page : [];
+        const uniqueList = [];
+        const idSet = new Set();
+        for (const item of list) {
+          if (!item || !item.id || idSet.has(item.id)) continue;
+          idSet.add(item.id);
+          uniqueList.push(item);
+        }
+        uniqueList.sort((a, b) => {
+          const interactionA = Number(a.likeCount || 0) + Number(a.favoriteCount || 0);
+          const interactionB = Number(b.likeCount || 0) + Number(b.favoriteCount || 0);
+          if (interactionB !== interactionA) return interactionB - interactionA;
+          return Number(b.likeCount || 0) - Number(a.likeCount || 0);
+        });
+        this.recommendList = uniqueList;
       } catch (error) {
         console.error(error);
         this.recommendList = [];
@@ -485,14 +502,16 @@ export default {
       uni.navigateTo({ url: '/pages/content/list?tab=announcement' });
     },
     goMerchantDetail(item) {
-      const merchantId = item?.merchantId || item?.id;
-      const merchantName = encodeURIComponent(item?.merchantName || '');
-      if (!merchantId) return;
-
-      // 跳转到投诉列表页面查看该商户的投诉详情
-      uni.navigateTo({
-        url: `/pages/complaint/list?merchantId=${merchantId}&merchantName=${merchantName}`
-      });
+      if (this.isSupervisor || this.isAdmin) {
+        const merchantId = item?.merchantId || item?.id;
+        const merchantName = encodeURIComponent(item?.merchantName || '');
+        if (!merchantId) return;
+        uni.navigateTo({
+          url: `/pages/supervisor/complaints?merchantId=${merchantId}&merchantName=${merchantName}`
+        });
+        return;
+      }
+      uni.navigateTo({ url: '/pages/content/list?tab=announcement' });
     }
   }
 };
@@ -546,9 +565,26 @@ export default {
   margin-bottom: 12rpx;
 }
 
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
 .search-bar {
+  flex: 1;
   background: #f5f5f5;
   border-radius: 50rpx;
+}
+
+.search-btn {
+  flex-shrink: 0;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 28rpx;
+  border-radius: 36rpx;
+  background: #2f65f9;
+  color: #fff;
 }
 
 .filter-row {

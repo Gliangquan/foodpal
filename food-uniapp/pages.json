@@ -134,26 +134,26 @@
       {
         "pagePath": "pages/index/index",
         "text": "首页",
-        "iconPath": "/static/icon_med/shouye.png",
-        "selectedIconPath": "/static/icon_med/shouye.png"
+        "iconPath": "static/icon_med/shouye.png",
+        "selectedIconPath": "static/icon_med/shouye.png"
       },
       {
         "pagePath": "pages/order/index",
         "text": "投诉",
-        "iconPath": "/static/icon_med/dingdan.png",
-        "selectedIconPath": "/static/icon_med/dingdan.png"
+        "iconPath": "static/icon_med/dingdan.png",
+        "selectedIconPath": "static/icon_med/dingdan.png"
       },
       {
         "pagePath": "pages/notification/index",
         "text": "消息",
-        "iconPath": "/static/icon_med/xiaoxi.png",
-        "selectedIconPath": "/static/icon_med/xiaoxi.png"
+        "iconPath": "static/icon_med/xiaoxi.png",
+        "selectedIconPath": "static/icon_med/xiaoxi.png"
       },
       {
         "pagePath": "pages/profile/index",
         "text": "我的",
-        "iconPath": "/static/icon_med/wode.png",
-        "selectedIconPath": "/static/icon_med/wode.png"
+        "iconPath": "static/icon_med/wode.png",
+        "selectedIconPath": "static/icon_med/wode.png"
       }
     ]
   }

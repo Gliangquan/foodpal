@@ -302,7 +302,7 @@ const canteenApi = {
     return new Promise((resolve, reject) => {
       const token = getToken();
       const bizMap = {
-        avatar: 'user_avatar',
+        avatar: 'merchant_avatar',
         dynamic: 'dynamic_image',
         dish: 'dish_image',
         complaint: 'complaint_evidence'

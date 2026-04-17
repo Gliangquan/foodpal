@@ -47,12 +47,16 @@
             <template v-if="isSpecial">
               <uni-easyinput v-model="dishForm.specialPrice" type="digit" placeholder="特价价格" style="margin-top: 10rpx;" />
               <view class="time-row">
-                <text class="label">开始时间：</text>
-                <uni-datetime-picker v-model="dishForm.specialStartTime" type="datetime" />
+                <text class="label">开始时间</text>
+                <view class="time-picker-wrap">
+                  <uni-datetime-picker v-model="dishForm.specialStartTime" type="datetime" />
+                </view>
               </view>
               <view class="time-row">
-                <text class="label">结束时间：</text>
-                <uni-datetime-picker v-model="dishForm.specialEndTime" type="datetime" />
+                <text class="label">结束时间</text>
+                <view class="time-picker-wrap">
+                  <uni-datetime-picker v-model="dishForm.specialEndTime" type="datetime" />
+                </view>
               </view>
             </template>
           </view>
@@ -259,14 +263,20 @@ export default {
 
 .time-row {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   margin-top: 16rpx;
+  gap: 12rpx;
 }
 
 .label {
   font-size: 26rpx;
   color: #6d7892;
-  width: 160rpx;
+}
+
+.time-picker-wrap {
+  width: 100%;
+  min-width: 0;
 }
 
 .submit-btn {

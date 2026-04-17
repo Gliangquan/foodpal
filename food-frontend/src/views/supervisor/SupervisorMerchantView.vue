@@ -132,6 +132,9 @@
           <template v-if="column.key === 'status'">
             <a-tag :color="complaintStatusColor(record.status)">{{ complaintStatusText(record.status) }}</a-tag>
           </template>
+          <template v-else-if="column.key === 'processProgress'">
+            <span>{{ complaintProgressText(record) }}</span>
+          </template>
         </template>
       </a-table>
     </a-modal>
@@ -176,7 +179,7 @@ const complaintColumns = [
   { title: '投诉编号', dataIndex: 'complaintNo', key: 'complaintNo', width: 160 },
   { title: '投诉标题', dataIndex: 'complaintTitle', key: 'complaintTitle' },
   { title: '状态', key: 'status', width: 100 },
-  { title: '处理进度', dataIndex: 'processProgress', key: 'processProgress' },
+  { title: '处理说明', key: 'processProgress', width: 220 },
   { title: '提交时间', dataIndex: 'createTime', key: 'createTime', width: 180 }
 ];
 
@@ -235,7 +238,7 @@ const auditStatusColor = (value?: string) => {
 const complaintStatusText = (value?: string) => {
   if (value === 'pending_review') return '待审核';
   if (value === 'pending_rectify') return '待整改';
-  if (value === 'rectified') return '已整改';
+  if (value === 'rectified') return '待复核';
   if (value === 'completed') return '已完成';
   if (value === 'rejected') return '已驳回';
   return value || '-';
@@ -248,6 +251,16 @@ const complaintStatusColor = (value?: string) => {
   if (value === 'completed') return 'green';
   if (value === 'rejected') return 'red';
   return 'default';
+};
+
+const complaintProgressText = (record?: ComplaintItem) => {
+  if (!record) return '-';
+  if (record.status === 'pending_review') return '待监督员处理';
+  if (record.status === 'pending_rectify') return record.rectifyRequirement || '已通知商户整改';
+  if (record.status === 'rectified') return record.rectifyResult || '商户已提交整改结果，待监督员复核';
+  if (record.status === 'completed') return record.feedback || record.rectifyResult || '投诉已处理完成';
+  if (record.status === 'rejected') return record.feedback || '投诉已驳回';
+  return record.processProgress || '-';
 };
 
 const refreshList = async () => {

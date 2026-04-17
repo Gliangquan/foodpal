@@ -1,6 +1,5 @@
 <template>
   <view class="page-content">
-    <!-- 商户信息卡片 -->
     <uni-card v-if="merchantName" :border="false" padding="16" style="margin-bottom: 16rpx;">
       <view class="merchant-header">
         <text class="merchant-name">{{ decodeURIComponent(merchantName) }}</text>
@@ -8,7 +7,6 @@
       </view>
     </uni-card>
 
-    <!-- 统计卡片 -->
     <uni-card :border="false" padding="16" style="margin-bottom: 16rpx;">
       <view class="stat-grid">
         <view class="stat-item">
@@ -17,11 +15,11 @@
         </view>
         <view class="stat-item">
           <text class="stat-num">{{ statistics.pending }}</text>
-          <text class="stat-label">待处理</text>
+          <text class="stat-label">待审核</text>
         </view>
         <view class="stat-item">
           <text class="stat-num">{{ statistics.rectify }}</text>
-          <text class="stat-label">待整改</text>
+          <text class="stat-label">整改中/待复核</text>
         </view>
         <view class="stat-item">
           <text class="stat-num">{{ statistics.completed }}</text>
@@ -30,7 +28,6 @@
       </view>
     </uni-card>
 
-    <!-- 筛选 -->
     <uni-card :border="false" padding="16" style="margin-bottom: 16rpx;">
       <view class="filter-row">
         <picker :value="statusIndex" :range="statusOptions" range-key="text" @change="onStatusChange">
@@ -42,13 +39,12 @@
       </view>
     </uni-card>
 
-    <!-- 投诉列表 -->
     <view v-if="complaintList.length">
-      <uni-card 
-        v-for="item in complaintList" 
-        :key="item.id" 
-        :border="false" 
-        padding="18" 
+      <uni-card
+        v-for="item in complaintList"
+        :key="item.id"
+        :border="false"
+        padding="18"
         class="complaint-card"
         @click="goDetail(item)"
       >
@@ -59,9 +55,9 @@
           </view>
           <uni-tag :text="statusText(item.status)" :type="statusTag(item.status)" size="small" />
         </view>
-        
+
         <text class="complaint-title">{{ item.complaintTitle }}</text>
-        
+
         <view class="meta-row">
           <view class="meta-item">
             <text class="meta-icon">商户</text>
@@ -114,9 +110,11 @@ export default {
       statusIndex: 0,
       statusOptions: [
         { text: '全部状态', value: '' },
-        { text: '待处理', value: 'pending' },
-        { text: '待整改', value: 'rectify' },
-        { text: '已完成', value: 'completed' }
+        { text: '待审核', value: 'pending_review' },
+        { text: '待整改', value: 'pending_rectify' },
+        { text: '待复核', value: 'rectified' },
+        { text: '已完成', value: 'completed' },
+        { text: '已驳回', value: 'rejected' }
       ],
       current: 1,
       pageSize: 20
@@ -143,14 +141,12 @@ export default {
           merchantId: this.merchantId || undefined,
           status: this.statusOptions[this.statusIndex].value || undefined
         };
-        
+
         const page = await canteenApi.listComplaints(params);
         this.complaintList = page.records || [];
-        
-        // 计算统计数据
         this.statistics.total = page.total || 0;
-        this.statistics.pending = this.complaintList.filter(c => c.status === 'pending').length;
-        this.statistics.rectify = this.complaintList.filter(c => c.status === 'rectify').length;
+        this.statistics.pending = this.complaintList.filter(c => c.status === 'pending_review').length;
+        this.statistics.rectify = this.complaintList.filter(c => c.status === 'pending_rectify' || c.status === 'rectified').length;
         this.statistics.completed = this.complaintList.filter(c => c.status === 'completed').length;
       } catch (error) {
         uni.showToast({ title: '加载失败', icon: 'none' });
@@ -158,22 +154,26 @@ export default {
       }
     },
     onStatusChange(e) {
-      this.statusIndex = e.detail.value;
+      this.statusIndex = Number(e.detail.value || 0);
       this.loadComplaints();
     },
     statusText(status) {
       const map = {
-        pending: '待处理',
-        rectify: '待整改',
-        completed: '已完成'
+        pending_review: '待审核',
+        pending_rectify: '待整改',
+        rectified: '待复核',
+        completed: '已完成',
+        rejected: '已驳回'
       };
       return map[status] || status;
     },
     statusTag(status) {
       const map = {
-        pending: 'warning',
-        rectify: 'error',
-        completed: 'success'
+        pending_review: 'warning',
+        pending_rectify: 'error',
+        rectified: 'primary',
+        completed: 'success',
+        rejected: 'default'
       };
       return map[status] || 'default';
     },

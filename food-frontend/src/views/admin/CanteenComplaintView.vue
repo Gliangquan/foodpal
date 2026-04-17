@@ -294,7 +294,7 @@ const detailEvidenceImages = computed(() => parseEvidenceUrls(detailComplaint.va
 const statusText = (value?: string) => {
   if (value === 'pending_review') return '待审核';
   if (value === 'pending_rectify') return '待整改';
-  if (value === 'rectified') return '已整改';
+  if (value === 'rectified') return '待复核';
   if (value === 'completed') return '已完成';
   if (value === 'rejected') return '已驳回';
   return value || '-';
@@ -311,9 +311,9 @@ const statusColor = (value?: string) => {
 
 const getProgressText = (record?: ComplaintItem | null) => {
   if (!record) return '-';
-  if (record.status === 'pending_review') return '等待监督管理员审核';
+  if (record.status === 'pending_review') return '待监督员处理';
   if (record.status === 'pending_rectify') return record.rectifyRequirement || '已通知商户整改';
-  if (record.status === 'rectified') return record.rectifyResult || '商户已提交整改结果，等待复核';
+  if (record.status === 'rectified') return record.rectifyResult || '商户已提交整改结果，待监督员复核';
   if (record.status === 'completed') return record.feedback || record.rectifyResult || '投诉已处理完成';
   if (record.status === 'rejected') return record.feedback || '投诉已驳回';
   return record.processProgress || '-';

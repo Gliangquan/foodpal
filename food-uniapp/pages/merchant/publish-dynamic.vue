@@ -2,7 +2,7 @@
   <view class="page-content">
     <view class="header-card">
       <text class="title">发布动态</text>
-      <text class="sub">发布店铺最新动态、活动或通知</text>
+      <text class="sub">提交店铺动态、活动或通知，等待监督员审核</text>
     </view>
 
     <uni-card :border="false" padding="24">
@@ -28,9 +28,14 @@
         <uni-forms-item label="动态内容" required>
           <uni-easyinput v-model="dynamicForm.content" type="textarea" placeholder="请输入动态内容，介绍您的店铺活动、新品上市等信息" maxlength="500" />
         </uni-forms-item>
+
+        <uni-forms-item label="展示截止时间">
+          <view class="expire-tip">商户可自行设置截止时间，监督员审核时会判断是否合理；不填则默认长期展示。</view>
+          <uni-datetime-picker v-model="dynamicForm.expireTime" type="datetime" />
+        </uni-forms-item>
       </uni-forms>
 
-      <button class="submit-btn" type="primary" @tap="publishDynamic">发布动态</button>
+      <button class="submit-btn" type="primary" @tap="publishDynamic">提交审核</button>
     </uni-card>
 
     <view class="history-section">
@@ -42,7 +47,7 @@
             <view class="history-info">
               <text class="history-title">{{ item.title }}</text>
               <text class="history-time">{{ format(item.createTime) }}</text>
-              <uni-tag :text="item.status === 'published' ? '已发布' : '审核中'" :type="item.status === 'published' ? 'success' : 'warning'" size="small" />
+              <uni-tag :text="item.status === 'published' ? '已发布' : '待审核'" :type="item.status === 'published' ? 'success' : 'warning'" size="small" />
             </view>
           </view>
         </uni-card>
@@ -66,7 +71,8 @@ export default {
         title: '',
         content: '',
         coverImage: '',
-        newsType: 'notice'
+        newsType: 'notice',
+        expireTime: ''
       },
       newsTypeOptions: [
         { text: '新品上市', value: 'new_dish' },
@@ -120,15 +126,16 @@ export default {
       }
 
       try {
-        uni.showLoading({ title: '发布中...' });
+        uni.showLoading({ title: '提交中...' });
         await canteenApi.publishDynamic(this.dynamicForm);
-        uni.showToast({ title: '发布成功', icon: 'success' });
+        uni.showToast({ title: '已提交，等待审核', icon: 'success' });
         // 重置表单
         this.dynamicForm = {
           title: '',
           content: '',
           coverImage: '',
-          newsType: 'notice'
+          newsType: 'notice',
+          expireTime: ''
         };
         // 刷新历史记录
         await this.loadHistory();
@@ -213,6 +220,13 @@ export default {
 .preview-img {
   width: 100%;
   height: 100%;
+}
+
+.expire-tip {
+  margin-bottom: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #6d7892;
 }
 
 .submit-btn {

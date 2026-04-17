@@ -6,7 +6,7 @@
     </view>
     <view class="header-card">
       <text class="title">投诉记录</text>
-      <text class="sub">{{ roleText }}查看投诉单及处理进度</text>
+      <text class="sub">{{ pageSubtitle }}</text>
       <uni-segmented-control
         :current="statusIndex"
         :values="statusLabels"
@@ -121,9 +121,17 @@ import { formatDateTime } from '@/utils/format.js';
 import { isMerchantRole, isSupervisorRole, isStudentRole, roleLabel } from '@/utils/permission.js';
 
 const STATUS_VALUES = ['', 'pending_review', 'pending_rectify', 'rectified', 'completed', 'rejected'];
-const STATUS_LABELS = ['全部', '待审核', '待整改', '已整改', '已完成', '已驳回'];
+const STATUS_LABELS = ['全部', '待审核', '待整改', '待复核', '已完成', '已驳回'];
 
 export default {
+  computed: {
+    pageSubtitle() {
+      if (this.isStudent) return '查看自己提交的投诉及处理进度';
+      if (this.isMerchant) return '查看店铺收到的投诉与整改进度';
+      if (this.isSupervisor) return '查看投诉单并处理整改流程';
+      return `${this.roleText}查看投诉单及处理进度`;
+    }
+  },
   data() {
     return {
       userInfo: {},
@@ -165,7 +173,7 @@ export default {
       const map = {
         pending_review: '待审核',
         pending_rectify: '待整改',
-        rectified: '已整改',
+        rectified: '待复核',
         completed: '已完成',
         rejected: '已驳回'
       };
@@ -203,7 +211,9 @@ export default {
           size: this.pageSize,
           status: STATUS_VALUES[this.statusIndex] || undefined
         };
-        const page = this.isSupervisor ? await canteenApi.listComplaints(params) : await canteenApi.listMyComplaints(params);
+        const page = this.isSupervisor
+          ? await canteenApi.listComplaints(params)
+          : await canteenApi.listMyComplaints(params);
         const records = page.records || [];
         if (reset) {
           this.list = records;
@@ -347,9 +357,9 @@ export default {
     },
     progressText(item) {
       if (!item) return '待处理';
-      if (item.status === 'pending_review') return '等待监督管理员审核';
+      if (item.status === 'pending_review') return '待监督员处理';
       if (item.status === 'pending_rectify') return item.rectifyRequirement || '已通知商户整改';
-      if (item.status === 'rectified') return item.rectifyResult || '商户已提交整改结果，等待复核';
+      if (item.status === 'rectified') return item.rectifyResult || '商户已提交整改结果，待监督员复核';
       if (item.status === 'completed') return item.feedback || item.rectifyResult || '投诉已处理完成';
       if (item.status === 'rejected') return item.feedback || '投诉已驳回';
       return item.processProgress || '待处理';

@@ -7,7 +7,7 @@
     
     <uni-card :border="false" padding="24">
       <view class="avatar-section">
-        <image class="merchant-avatar" :src="merchant.avatar" mode="aspectFill" />
+        <image class="merchant-avatar" :src="getMerchantAvatar(merchant.avatar)" mode="aspectFill" />
         <button size="mini" @tap="uploadAvatar">{{ merchant.avatar ? '更换头像' : '上传头像' }}</button>
       </view>
       
@@ -37,7 +37,10 @@
         </uni-forms-item>
       </uni-forms>
       
-      <button class="submit-btn" type="primary" @tap="saveProfile">保存修改</button>
+      <view class="audit-tip">
+        店铺资料修改需管理员审核，通过后才会正式生效。
+      </view>
+      <button class="submit-btn" type="primary" @tap="saveProfile">提交修改</button>
     </uni-card>
     
     <uni-card :border="false" padding="24" style="margin-top: 20rpx;">
@@ -62,6 +65,7 @@
 
 <script>
 import { canteenApi, userApi } from '@/utils/api.js';
+import { normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -87,6 +91,9 @@ export default {
     this.loadMerchantProfile();
   },
   methods: {
+    getMerchantAvatar(url) {
+      return normalizeFileUrl(url) || this.defaultImg;
+    },
     async loadMerchantProfile() {
       try {
         // 获取当前用户信息
@@ -154,7 +161,8 @@ export default {
       try {
         uni.showLoading({ title: '保存中...' });
         await canteenApi.updateMerchantProfile(this.merchant);
-        uni.showToast({ title: '保存成功', icon: 'success' });
+        uni.showToast({ title: '资料已提交，请等待管理员审核', icon: 'none' });
+        await this.loadMerchantProfile();
       } catch (error) {
         uni.showToast({ title: error.message || '保存失败', icon: 'none' });
       } finally {
@@ -202,6 +210,16 @@ export default {
   border-radius: 50%;
   margin-bottom: 16rpx;
   background-color: #f5f7fa;
+}
+
+.audit-tip {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  background: #fff7e6;
+  color: #ad6800;
+  font-size: 24rpx;
+  line-height: 1.6;
 }
 
 .submit-btn {

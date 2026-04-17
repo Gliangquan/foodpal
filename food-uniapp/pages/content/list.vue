@@ -1,8 +1,8 @@
 <template>
   <view class="page-content">
     <view class="header-card">
-      <text class="title">商户动态 / 系统公告</text>
-      <text class="sub">查看商户发布内容与平台公告，不展示互动数据</text>
+      <text class="title">校园资讯</text>
+      <text class="sub">切换查看商户动态与平台公告</text>
     </view>
 
     <!-- 标签切换 -->
@@ -120,7 +120,7 @@ export default {
   data() {
     return {
       keyword: '',
-      tabLabels: ['商户动态', '系统公告'],
+      tabLabels: ['商户动态', '平台公告'],
       tabIndex: 0,
       list: [],
       current: 1,
@@ -141,7 +141,10 @@ export default {
       }
     };
   },
-  onLoad() {
+  onLoad(options = {}) {
+    if (options.tab === 'announcement') {
+      this.tabIndex = 1;
+    }
     Promise.all([this.fetchList(true), this.loadStatistics()]);
   },
   onPullDownRefresh() {

@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,6 +53,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -202,7 +204,16 @@ public class CanteenController {
     public BaseResponse<MerchantProfile> getMyMerchant(HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         MerchantProfile profile = getMerchantByUserId(loginUser.getId());
-        return ResultUtils.success(profile);
+        if (profile == null) {
+            return ResultUtils.success(null);
+        }
+        MerchantProfile view = new MerchantProfile();
+        BeanUtils.copyProperties(profile, view);
+        if (StringUtils.isNotBlank(profile.getPendingData())) {
+            applyPendingMerchantData(view);
+            view.setPendingData(profile.getPendingData());
+        }
+        return ResultUtils.success(view);
     }
 
     @PostMapping("/merchant/save")
@@ -560,14 +571,36 @@ public class CanteenController {
             scoredDishes.add(item);
         }
 
-        // 按分数排序
-        scoredDishes.sort((o1, o2) -> Integer.compare((Integer) o2.get("score"), (Integer) o1.get("score")));
+        // 按分数排序，并在同分时优先展示点赞/收藏更高的菜品
+        scoredDishes.sort((o1, o2) -> {
+            int scoreCompare = Integer.compare((Integer) o2.get("score"), (Integer) o1.get("score"));
+            if (scoreCompare != 0) {
+                return scoreCompare;
+            }
+            Dish d1 = (Dish) o1.get("dish");
+            Dish d2 = (Dish) o2.get("dish");
+            int interactionCompare = Integer.compare(
+                    nvl(d2.getLikeCount()) + nvl(d2.getFavoriteCount()),
+                    nvl(d1.getLikeCount()) + nvl(d1.getFavoriteCount()));
+            if (interactionCompare != 0) {
+                return interactionCompare;
+            }
+            return Long.compare(d2.getId() == null ? 0L : d2.getId(), d1.getId() == null ? 0L : d1.getId());
+        });
 
-        // 选择前limit个
-        List<Dish> picked = scoredDishes.stream()
-                .limit(limit)
-                .map(item -> (Dish) item.get("dish"))
-                .collect(Collectors.toList());
+        // 去重后取前 limit 个，避免重复菜品出现在推荐区
+        Map<Long, Dish> pickedMap = new LinkedHashMap<>();
+        for (Map<String, Object> scoredDish : scoredDishes) {
+            Dish dish = (Dish) scoredDish.get("dish");
+            if (dish == null || dish.getId() == null || pickedMap.containsKey(dish.getId())) {
+                continue;
+            }
+            pickedMap.put(dish.getId(), dish);
+            if (pickedMap.size() >= limit) {
+                break;
+            }
+        }
+        List<Dish> picked = new ArrayList<>(pickedMap.values());
 
         Map<Long, MerchantProfile> merchantMap = buildMerchantMap(picked.stream().map(Dish::getMerchantId).collect(Collectors.toSet()));
         List<Map<String, Object>> data = picked.stream().map(dish -> {
@@ -584,7 +617,7 @@ public class CanteenController {
             boolean special = isSpecialDish(dish, now);
             row.put("isSpecial", special);
             row.put("currentPrice", special ? dish.getSpecialPrice() : dish.getDishPrice());
-            row.put("score", getDishScore(dish));
+            row.put("score", nvl(dish.getLikeCount()) + nvl(dish.getFavoriteCount()));
             return row;
         }).collect(Collectors.toList());
 
@@ -774,6 +807,7 @@ public class CanteenController {
             @RequestParam(defaultValue = "1") long current,
             @RequestParam(defaultValue = "10") long size,
             @RequestParam(required = false) Integer supplyStatus,
+            @RequestParam(required = false) String keyword,
             HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         requireMerchant(loginUser);
@@ -789,6 +823,7 @@ public class CanteenController {
                 .eq(Dish::getIsDelete, 0)
                 .eq(Dish::getMerchantId, merchant.getId())
                 .eq(supplyStatus != null, Dish::getSupplyStatus, supplyStatus)
+                .like(StringUtils.isNotBlank(keyword), Dish::getDishName, keyword)
                 .orderByDesc(Dish::getUpdateTime)
                 .page(new Page<>(current, size));
         
@@ -963,7 +998,7 @@ public class CanteenController {
     }
 
     @GetMapping("/complaint/my/list")
-    public BaseResponse<Page<CanteenComplaint>> listMyComplaint(
+    public BaseResponse<Page<Map<String, Object>>> listMyComplaint(
             @RequestParam(defaultValue = "1") long current,
             @RequestParam(defaultValue = "10") long size,
             @RequestParam(required = false) String status,
@@ -990,7 +1025,48 @@ public class CanteenController {
                     .orderByDesc(CanteenComplaint::getCreateTime)
                     .page(new Page<>(current, size));
         }
-        return ResultUtils.success(page);
+
+        List<CanteenComplaint> complaints = page.getRecords();
+        Set<Long> merchantIds = complaints.stream().map(CanteenComplaint::getMerchantId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Long> userIds = new HashSet<>();
+        userIds.addAll(complaints.stream().map(CanteenComplaint::getUserId).filter(Objects::nonNull).collect(Collectors.toSet()));
+        userIds.addAll(complaints.stream().map(CanteenComplaint::getProcessBy).filter(Objects::nonNull).collect(Collectors.toSet()));
+        Map<Long, MerchantProfile> merchantMap = buildMerchantMap(merchantIds);
+        Map<Long, User> userMap = buildUserMap(userIds);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (CanteenComplaint complaint : complaints) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("id", complaint.getId());
+            row.put("complaintNo", complaint.getComplaintNo());
+            row.put("userId", complaint.getUserId());
+            row.put("merchantId", complaint.getMerchantId());
+            row.put("complaintTitle", complaint.getComplaintTitle());
+            row.put("complaintContent", complaint.getComplaintContent());
+            row.put("evidenceUrls", complaint.getEvidenceUrls());
+            row.put("status", complaint.getStatus());
+            row.put("processProgress", complaint.getProcessProgress());
+            row.put("rectifyRequirement", complaint.getRectifyRequirement());
+            row.put("rectifyResult", complaint.getRectifyResult());
+            row.put("feedback", complaint.getFeedback());
+            row.put("resultRating", complaint.getResultRating());
+            row.put("processBy", complaint.getProcessBy());
+            row.put("processTime", complaint.getProcessTime());
+            row.put("createTime", complaint.getCreateTime());
+            row.put("updateTime", complaint.getUpdateTime());
+
+            MerchantProfile merchant = merchantMap.get(complaint.getMerchantId());
+            row.put("merchantName", merchant == null ? "" : merchant.getMerchantName());
+            User submitUser = userMap.get(complaint.getUserId());
+            row.put("studentName", submitUser == null ? "" : submitUser.getUserName());
+            User processUser = userMap.get(complaint.getProcessBy());
+            row.put("processByName", processUser == null ? "" : processUser.getUserName());
+            data.add(row);
+        }
+
+        Page<Map<String, Object>> result = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        result.setRecords(data);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/complaint/list")
@@ -1971,13 +2047,13 @@ public class CanteenController {
 
     private String processStatusText(String status) {
         if ("pending_review".equals(status)) {
-            return "等待监督管理员审核";
+            return "待监督员处理";
         }
         if ("pending_rectify".equals(status)) {
             return "已通知商户整改";
         }
         if ("rectified".equals(status)) {
-            return "商户已提交整改结果，等待复核";
+            return "商户已提交整改结果，待监督员复核";
         }
         if ("completed".equals(status)) {
             return "投诉已处理完成";

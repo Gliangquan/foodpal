@@ -8,7 +8,7 @@
           <a-select v-model:value="status" placeholder="状态筛选" allow-clear @change="refreshList">
             <a-select-option value="pending_review">待审核</a-select-option>
             <a-select-option value="pending_rectify">待整改</a-select-option>
-            <a-select-option value="rectified">已整改待复核</a-select-option>
+            <a-select-option value="rectified">待复核</a-select-option>
             <a-select-option value="completed">已完成</a-select-option>
             <a-select-option value="rejected">已驳回</a-select-option>
           </a-select>
@@ -167,7 +167,7 @@ const processForm = reactive({
 const statusText = (value?: string) => {
   if (value === 'pending_review') return '待审核';
   if (value === 'pending_rectify') return '待整改';
-  if (value === 'rectified') return '已整改';
+  if (value === 'rectified') return '待复核';
   if (value === 'completed') return '已完成';
   if (value === 'rejected') return '已驳回';
   return value || '-';
