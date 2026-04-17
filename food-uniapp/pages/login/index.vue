@@ -98,6 +98,7 @@
 <script>
 import { userApi, canteenApi } from '@/utils/api.js';
 import { setToken } from '@/utils/request.js';
+import { applyTabbarConfig } from '@/utils/tabbar.js';
 
 const REGISTER_ROLES = ['student', 'merchant', 'supervisor'];
 
@@ -185,6 +186,7 @@ export default {
         const user = await userApi.login(payload);
         setToken(user.token);
         uni.setStorageSync('userInfo', user);
+        applyTabbarConfig(user);
         
         // 保存或清除记住的密码
         if (this.rememberPassword) {

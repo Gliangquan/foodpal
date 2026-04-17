@@ -140,8 +140,8 @@
       {
         "pagePath": "pages/order/index",
         "text": "投诉",
-        "iconPath": "static/icon_med/dingdan.png",
-        "selectedIconPath": "static/icon_med/dingdan.png"
+        "iconPath": "static/icon_med/tixing.png",
+        "selectedIconPath": "static/icon_med/tixing.png"
       },
       {
         "pagePath": "pages/notification/index",

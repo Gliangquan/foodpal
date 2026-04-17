@@ -37,7 +37,12 @@
           />
         </view>
         <text class="progress">处理说明：{{ progressText(item) }}</text>
+        <text class="meta" v-if="item.rectifyRequirement">整改要求：{{ item.rectifyRequirement }}</text>
+        <text class="meta" v-if="item.rectifyResult">整改结果：{{ item.rectifyResult }}</text>
+        <text class="meta" v-if="item.feedback">反馈说明：{{ item.feedback }}</text>
+        <text class="meta" v-if="item.processByName">处理人：{{ item.processByName }}</text>
         <text class="time">提交时间：{{ format(item.createTime) }}</text>
+        <text class="time" v-if="item.processTime">处理时间：{{ format(item.processTime) }}</text>
 
         <view class="op-row">
           <button size="mini" v-if="isMerchant && item.status === 'pending_rectify'" @tap="openRectify(item)">提交整改结果</button>
@@ -359,7 +364,7 @@ export default {
       if (!item) return '待处理';
       if (item.status === 'pending_review') return '待监督员处理';
       if (item.status === 'pending_rectify') return item.rectifyRequirement || '已通知商户整改';
-      if (item.status === 'rectified') return item.rectifyResult || '商户已提交整改结果，待监督员复核';
+      if (item.status === 'rectified') return item.rectifyResult || '商户已提交整改结果，请等待监督员确认是否通过';
       if (item.status === 'completed') return item.feedback || item.rectifyResult || '投诉已处理完成';
       if (item.status === 'rejected') return item.feedback || '投诉已驳回';
       return item.processProgress || '待处理';

@@ -223,7 +223,7 @@ const progressText = (record?: ComplaintItem | null) => {
   if (!record) return '待处理';
   if (record.status === 'pending_review') return '待监督员处理';
   if (record.status === 'pending_rectify') return record.rectifyRequirement || '已通知商户整改';
-  if (record.status === 'rectified') return record.rectifyResult || '商户已提交整改结果，待监督员复核';
+  if (record.status === 'rectified') return record.rectifyResult || '商户已提交整改结果，请监督员确认是否通过';
   if (record.status === 'completed') return record.feedback || record.rectifyResult || '投诉已处理完成';
   if (record.status === 'rejected') return record.feedback || '投诉已驳回';
   return record.processProgress || '待处理';

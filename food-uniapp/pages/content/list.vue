@@ -1,8 +1,8 @@
 <template>
   <view class="page-content">
     <view class="header-card">
-      <text class="title">校园资讯</text>
-      <text class="sub">切换查看商户动态与平台公告</text>
+      <text class="title">资讯与公告</text>
+      <text class="sub">“商户动态”是商家发布的活动/新品/通知；“平台公告”是系统统一发布的通知。</text>
     </view>
 
     <!-- 标签切换 -->

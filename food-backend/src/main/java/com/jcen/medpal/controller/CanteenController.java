@@ -2053,7 +2053,7 @@ public class CanteenController {
             return "已通知商户整改";
         }
         if ("rectified".equals(status)) {
-            return "商户已提交整改结果，待监督员复核";
+            return "商户已提交整改结果，请监督员确认是否通过";
         }
         if ("completed".equals(status)) {
             return "投诉已处理完成";

@@ -35,17 +35,23 @@ const formatRelative = (value) => {
 const normalizeFileUrl = (url) => {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
+  const value = String(url).trim();
+  if (!value) return '';
   const apiBase = String(BASE_URL || '').replace(/\/+$/, '');
   const hostBase = apiBase.replace(/\/api$/i, '');
-  let finalUrl = '';
-  if (url.startsWith('/api/')) {
-    finalUrl = `${hostBase}${url}`;
-  } else if (url.startsWith('/')) {
-    finalUrl = `${apiBase}${url}`;
-  } else {
-    finalUrl = `${apiBase}/${url}`;
+  if (value.startsWith('/api/')) {
+    return `${hostBase}${value}`;
   }
-  return finalUrl;
+  if (value.startsWith('/file/')) {
+    return `${apiBase}${value}`;
+  }
+  if (value.startsWith('api/')) {
+    return `${hostBase}/${value}`;
+  }
+  if (value.startsWith('/')) {
+    return `${hostBase}${value}`;
+  }
+  return `${apiBase}/file/preview/${value}`;
 };
 
 export { formatDate, formatDateTime, formatRelative, normalizeFileUrl };

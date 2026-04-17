@@ -322,6 +322,7 @@ import avatar from '@/components/avatar.vue';
 import { canteenApi, fileApi, userApi } from '@/utils/api.js';
 import { normalizeFileUrl } from '@/utils/format.js';
 import { roleLabel, isStudentRole, isMerchantRole, isSupervisorRole, isAdminRole } from '@/utils/permission.js';
+import { applyTabbarConfig } from '@/utils/tabbar.js';
 
 export default {
   components: {
@@ -357,6 +358,7 @@ export default {
       this.isMerchant = isMerchantRole(this.user);
       this.isSupervisor = isSupervisorRole(this.user);
       this.isAdmin = isAdminRole(this.user);
+      applyTabbarConfig(this.user);
     },
     getAvatarUrl(url) {
       if (!url) return '/static/logo.png';
@@ -483,6 +485,7 @@ export default {
           if (res.confirm) {
             uni.removeStorageSync('foodpal_token');
             uni.removeStorageSync('userInfo');
+            applyTabbarConfig({});
             uni.reLaunch({ url: '/pages/login/index' });
           }
         }
