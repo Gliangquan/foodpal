@@ -469,7 +469,7 @@ export default {
       uni.navigateTo({ url: '/pages/supervisor/complaints?sort=ranking' });
     },
     goAdminUser() {
-      uni.navigateTo({ url: '/pages/supervisor/complaints' });
+      uni.showToast({ title: 'UniApp 管理员用户管理页暂未实现', icon: 'none' });
     },
     goAdminMerchant() {
       uni.navigateTo({ url: '/pages/supervisor/merchants' });

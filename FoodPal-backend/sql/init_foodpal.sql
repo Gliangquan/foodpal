@@ -24,6 +24,8 @@ create table user(
     user_role varchar(256) default 'user' not null comment '用户角色：student/merchant/supervisor/admin',
     user_phone varchar(20) null unique comment '手机号',
     user_email varchar(256) null unique comment '邮箱',
+    gender varchar(10) null comment '性别',
+    age int null comment '年龄',
     status tinyint default 1 not null comment '账户状态：1启用 0禁用',
     union_id varchar(256) null unique comment '开放平台id（微信 UnionID）',
     mp_open_id varchar(256) null unique comment '小程序openId',

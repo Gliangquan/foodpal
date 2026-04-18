@@ -8,5 +8,5 @@ RUN mvn -q -DskipTests package
 FROM eclipse-temurin:11-jre
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
-EXPOSE 9901
+EXPOSE 19941
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

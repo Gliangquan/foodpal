@@ -2267,9 +2267,6 @@ public class CanteenController {
             }
         }
 
-        // 添加一些随机因素（0-5分）使推荐更多样化
-        score += ThreadLocalRandom.current().nextInt(6);
-
         return score;
     }
 
