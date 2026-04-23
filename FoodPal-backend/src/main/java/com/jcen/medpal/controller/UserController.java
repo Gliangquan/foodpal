@@ -87,6 +87,12 @@ public class UserController {
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, userPhone)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+        if (StringUtils.isBlank(userRole)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请选择注册角色");
+        }
+        if (!"student".equalsIgnoreCase(userRole) && !"merchant".equalsIgnoreCase(userRole)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "仅支持注册学生或商户账号");
+        }
         validateUserPhoneAndEmail(userPhone, userEmail);
         ensurePhoneAndEmailUnique(userPhone, userEmail, null);
 

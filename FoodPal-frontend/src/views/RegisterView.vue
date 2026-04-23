@@ -48,6 +48,21 @@
             </a-input>
           </a-form-item>
 
+          <!-- 注册角色 -->
+          <a-form-item
+            name="userRole"
+            :rules="[{ required: true, message: '请选择注册角色' }]"
+          >
+            <a-select
+              v-model:value="registerForm.userRole"
+              placeholder="请选择注册角色"
+              size="large"
+            >
+              <a-select-option value="student">学生</a-select-option>
+              <a-select-option value="merchant">商户</a-select-option>
+            </a-select>
+          </a-form-item>
+
           <!-- 密码 -->
           <a-form-item
             name="password"
@@ -124,6 +139,7 @@ import type { UserRegisterRequest } from '../api';
 const registerForm = reactive({
   username: '',
   phone: '',
+  userRole: undefined as UserRegisterRequest['userRole'] | undefined,
   password: '',
   confirmPassword: '',
 });
@@ -146,6 +162,7 @@ const handleRegister = async () => {
     const params: UserRegisterRequest = {
       userAccount: registerForm.username,
       userPhone: registerForm.phone,
+      userRole: registerForm.userRole,
       userPassword: registerForm.password,
       checkPassword: registerForm.confirmPassword,
     };
