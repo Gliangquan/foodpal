@@ -44,7 +44,25 @@ const resolveTabbarConfig = (userInfo) => {
   return TABBAR_CONFIG.default;
 };
 
+// TabBar 页面路径集合，用于判断当前页面是否为 TabBar 页面
+const TABBAR_PAGES = [
+  'pages/index/index',
+  'pages/order/index',
+  'pages/notification/index',
+  'pages/profile/index'
+];
+
+const isTabBarPage = () => {
+  const pages = getCurrentPages();
+  if (!pages || pages.length === 0) return false;
+  const currentPage = pages[pages.length - 1];
+  const route = currentPage?.route || '';
+  return TABBAR_PAGES.includes(route);
+};
+
 const applyTabbarConfig = (userInfo) => {
+  // 微信小程序要求 setTabBarItem 必须在 TabBar 页面上调用
+  if (!isTabBarPage()) return;
   const config = resolveTabbarConfig(userInfo);
   config.forEach((item, index) => {
     uni.setTabBarItem({

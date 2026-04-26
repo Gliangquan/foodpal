@@ -502,16 +502,12 @@ export default {
       uni.navigateTo({ url: '/pages/content/list?tab=announcement' });
     },
     goMerchantDetail(item) {
-      if (this.isSupervisor || this.isAdmin) {
-        const merchantId = item?.merchantId || item?.id;
-        const merchantName = encodeURIComponent(item?.merchantName || '');
-        if (!merchantId) return;
-        uni.navigateTo({
-          url: `/pages/supervisor/complaints?merchantId=${merchantId}&merchantName=${merchantName}`
-        });
-        return;
-      }
-      uni.navigateTo({ url: '/pages/content/list?tab=announcement' });
+      const merchantId = item?.merchantId || item?.id;
+      const merchantName = encodeURIComponent(item?.merchantName || '');
+      if (!merchantId) return;
+      uni.navigateTo({
+        url: `/pages/complaint/list?merchantId=${merchantId}&merchantName=${merchantName}`
+      });
     }
   }
 };

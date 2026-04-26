@@ -1,5 +1,8 @@
 const DEFAULT_BASE_URL = '/api';
 const LOCAL_DEV_BASE_URL = '/api';
+// 微信小程序不支持代理，必须使用完整的后端地址
+// TODO: 部署时替换为实际的后端域名，如 https://your-domain.com/api
+const MP_WEIXIN_BASE_URL = 'http://localhost:19941/api';
 const TOKEN_KEY = 'foodpal_token';
 const BASE_URL_KEY = 'foodpal_base_url';
 
@@ -14,6 +17,10 @@ const resolveBaseUrl = () => {
   if (runtimeBaseUrl) {
     return runtimeBaseUrl;
   }
+
+  // #ifdef MP-WEIXIN
+  return MP_WEIXIN_BASE_URL;
+  // #endif
 
   // #ifdef H5
   if (typeof window !== 'undefined') {
