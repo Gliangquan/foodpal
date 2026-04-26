@@ -23,7 +23,7 @@
               v-for="(item, index) in evidenceFiles"
               :key="`${item}-${index}`"
               class="evidence-image"
-              :src="item"
+              :src="getImageUrl(item)"
               mode="aspectFill"
             />
           </view>
@@ -42,6 +42,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
+import { normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -73,6 +74,9 @@ export default {
     await this.loadMerchants();
   },
   methods: {
+    getImageUrl(url) {
+      return normalizeFileUrl(url) || '/static/logo.png';
+    },
     async loadMerchants() {
       try {
         const page = await canteenApi.listMerchants({ current: 1, size: 200, status: 1, auditStatus: 'approved' });

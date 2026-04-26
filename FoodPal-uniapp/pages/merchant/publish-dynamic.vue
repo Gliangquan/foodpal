@@ -47,7 +47,7 @@
             <view class="history-info">
               <text class="history-title">{{ item.title }}</text>
               <text class="history-time">{{ format(item.createTime) }}</text>
-              <uni-tag :text="item.status === 'published' ? '已发布' : '待审核'" :type="item.status === 'published' ? 'success' : 'warning'" size="small" />
+              <uni-tag :text="getAuditStatusText(item)" :type="getAuditStatusType(item)" size="small" />
             </view>
           </view>
         </uni-card>
@@ -88,6 +88,16 @@ export default {
   methods: {
     format(value) {
       return formatDateTime(value);
+    },
+    getAuditStatusText(item) {
+      if (item?.auditStatus === 'rejected') return '已驳回';
+      if (item?.auditStatus === 'approved' || item?.status === 'published') return '已发布';
+      return '待审核';
+    },
+    getAuditStatusType(item) {
+      if (item?.auditStatus === 'rejected') return 'error';
+      if (item?.auditStatus === 'approved' || item?.status === 'published') return 'success';
+      return 'warning';
     },
     uploadCover() {
       uni.chooseImage({

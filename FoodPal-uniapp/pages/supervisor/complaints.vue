@@ -203,7 +203,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
-import { formatDateTime } from '@/utils/format.js';
+import { formatDateTime, normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -497,11 +497,7 @@ export default {
       return normalizeList(source.split(','));
     },
     getImageUrl(url) {
-      if (!url) return '';
-      if (url.startsWith('http://') || url.startsWith('https://')) return url;
-      if (url.startsWith('/api/')) return url;
-      if (url.startsWith('/')) return url;
-      return '/api/file/preview/' + url;
+      return normalizeFileUrl(url);
     },
     previewEvidence(urls, index) {
       const imageUrls = this.parseEvidenceUrls(urls);

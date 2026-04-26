@@ -22,7 +22,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
-import { formatDateTime } from '@/utils/format.js';
+import { formatDateTime, normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -79,19 +79,7 @@ export default {
       }
     },
     getImageUrl(imageUrl) {
-      if (!imageUrl || imageUrl.trim() === '') {
-        return '';
-      }
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        return imageUrl;
-      }
-      if (imageUrl.startsWith('/api/')) {
-        return imageUrl;
-      }
-      if (imageUrl.startsWith('/')) {
-        return imageUrl;
-      }
-      return `/api/file/preview/${imageUrl}`;
+      return normalizeFileUrl(imageUrl);
     },
     // 图片加载失败处理
     onImageError() {

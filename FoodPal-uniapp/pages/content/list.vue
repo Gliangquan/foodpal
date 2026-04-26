@@ -114,7 +114,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
-import { formatDateTime } from '@/utils/format.js';
+import { formatDateTime, normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -178,9 +178,7 @@ export default {
         .slice(0, 100);
     },
     getImageUrl(url) {
-      if (!url) return '';
-      if (url.startsWith('http://') || url.startsWith('https://')) return url;
-      return '/api/file/preview/' + url;
+      return normalizeFileUrl(url);
     },
     async loadStatistics() {
       try {

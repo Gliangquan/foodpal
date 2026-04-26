@@ -122,7 +122,7 @@
 
 <script>
 import { canteenApi, userApi } from '@/utils/api.js';
-import { formatDateTime } from '@/utils/format.js';
+import { formatDateTime, normalizeFileUrl } from '@/utils/format.js';
 import { isMerchantRole, isSupervisorRole, isStudentRole, roleLabel } from '@/utils/permission.js';
 
 const STATUS_VALUES = ['', 'pending_review', 'pending_rectify', 'rectified', 'completed', 'rejected'];
@@ -343,11 +343,7 @@ export default {
       return normalizeList(source.split(','));
     },
     getImageUrl(url) {
-      if (!url) return '';
-      if (url.startsWith('http://') || url.startsWith('https://')) return url;
-      if (url.startsWith('/api/')) return url;
-      if (url.startsWith('/')) return url;
-      return '/api/file/preview/' + url;
+      return normalizeFileUrl(url);
     },
     previewEvidence(urls, index) {
       const imageUrls = this.parseEvidenceUrls(urls);

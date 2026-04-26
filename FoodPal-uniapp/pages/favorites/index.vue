@@ -54,6 +54,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
+import { normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -78,11 +79,7 @@ export default {
       }
     },
     getImageUrl(url) {
-      if (!url) return '/static/logo.png';
-      if (url.startsWith('http://') || url.startsWith('https://')) return url;
-      if (url.startsWith('/api/')) return url;
-      if (url.startsWith('/')) return url;
-      return `/api/file/preview/${url}`;
+      return normalizeFileUrl(url) || '/static/logo.png';
     },
     goDishDetail(item) {
       uni.navigateTo({ 

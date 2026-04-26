@@ -987,6 +987,8 @@ public class CanteenController {
             row.put("currentPrice", special ? dish.getSpecialPrice() : dish.getDishPrice());
             MerchantProfile merchant = merchantMap.get(dish.getMerchantId());
             row.put("merchantName", merchant == null ? "" : merchant.getMerchantName());
+            row.put("likeCount", dish.getLikeCount());
+            row.put("favoriteCount", dish.getFavoriteCount());
             row.put("favoriteTime", favorite.getCreateTime());
             data.add(row);
         }

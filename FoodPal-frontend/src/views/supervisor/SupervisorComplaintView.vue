@@ -99,6 +99,18 @@
         <a-form-item label="投诉内容">
           <a-textarea :value="currentComplaint?.complaintContent" :rows="3" disabled />
         </a-form-item>
+        <a-form-item label="证据图片">
+          <a-space wrap v-if="evidenceImages.length">
+            <a-image
+              v-for="(url, index) in evidenceImages"
+              :key="`${url}-${index}`"
+              :src="url"
+              :width="140"
+              :preview="true"
+            />
+          </a-space>
+          <span v-else style="color: #999">暂无证据</span>
+        </a-form-item>
         <a-form-item label="处理状态" required>
           <a-select v-model:value="processForm.status">
             <a-select-option value="pending_rectify">下达整改</a-select-option>

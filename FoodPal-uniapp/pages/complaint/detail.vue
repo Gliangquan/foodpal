@@ -30,6 +30,16 @@
     <uni-card :border="false" padding="24" style="margin-bottom: 16rpx;">
       <view class="section-title">投诉内容</view>
       <text class="content-text">{{ complaint.complaintContent || '-' }}</text>
+      <view class="evidence-list" v-if="parseEvidenceUrls(complaint.evidenceUrls).length">
+        <image
+          v-for="(url, index) in parseEvidenceUrls(complaint.evidenceUrls)"
+          :key="`${complaint.id || 'complaint'}-${index}`"
+          class="evidence-image"
+          :src="url"
+          mode="aspectFill"
+          @tap="previewEvidence(complaint.evidenceUrls, index)"
+        />
+      </view>
     </uni-card>
 
     <uni-card v-if="complaint.rectifyRequirement" :border="false" padding="24" style="margin-bottom: 16rpx;">
@@ -51,6 +61,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
+import { normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -77,19 +88,49 @@ export default {
     },
     statusText(status) {
       const map = {
-        pending: '待处理',
-        rectify: '待整改',
-        completed: '已完成'
+        pending_review: '待审核',
+        pending_rectify: '待整改',
+        rectified: '待复核',
+        completed: '已完成',
+        rejected: '已驳回'
       };
-      return map[status] || status;
+      return map[status] || status || '未知';
     },
     statusTag(status) {
       const map = {
-        pending: 'warning',
-        rectify: 'error',
-        completed: 'success'
+        pending_review: 'warning',
+        pending_rectify: 'error',
+        rectified: 'primary',
+        completed: 'success',
+        rejected: 'default'
       };
       return map[status] || 'default';
+    },
+    parseEvidenceUrls(urls) {
+      if (!urls) return [];
+      const source = String(urls).trim();
+      if (!source) return [];
+      const normalizeList = (list) => list
+        .map((item) => normalizeFileUrl(String(item || '').trim()))
+        .filter(Boolean);
+      if (source.startsWith('[') && source.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(source);
+          if (Array.isArray(parsed)) {
+            return normalizeList(parsed);
+          }
+        } catch (error) {
+        }
+      }
+      return normalizeList(source.split(','));
+    },
+    previewEvidence(urls, index) {
+      const imageUrls = this.parseEvidenceUrls(urls);
+      if (!imageUrls.length) return;
+      uni.previewImage({
+        urls: imageUrls,
+        current: imageUrls[index] || imageUrls[0]
+      });
     },
     getPriorityText(createTime) {
       if (!createTime) return '普通';
@@ -196,6 +237,20 @@ export default {
   color: #4a5568;
   line-height: 1.8;
   display: block;
+}
+
+.evidence-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.evidence-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 12rpx;
+  background: #f5f7fa;
 }
 
 .deadline-box {

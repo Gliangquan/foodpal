@@ -73,6 +73,17 @@
           <text class="content">{{ item.complaintContent }}</text>
         </view>
 
+        <view class="evidence-row" v-if="parseEvidenceUrls(item.evidenceUrls).length">
+          <image
+            v-for="(url, index) in parseEvidenceUrls(item.evidenceUrls)"
+            :key="`${item.id}-${index}`"
+            class="evidence-image"
+            :src="url"
+            mode="aspectFill"
+            @tap.stop="previewEvidence(item.evidenceUrls, index)"
+          />
+        </view>
+
         <view class="progress-row" v-if="item.rectifyRequirement">
           <text class="progress-label">整改要求：</text>
           <text class="progress-text">{{ item.rectifyRequirement }}</text>
@@ -94,6 +105,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
+import { normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -203,6 +215,30 @@ export default {
       const hour = String(date.getHours()).padStart(2, '0');
       const minute = String(date.getMinutes()).padStart(2, '0');
       return `${month}-${day} ${hour}:${minute}`;
+    },
+    parseEvidenceUrls(urls) {
+      if (!urls) return [];
+      const source = String(urls).trim();
+      if (!source) return [];
+      const normalizeList = (list) => list
+        .map((item) => normalizeFileUrl(String(item || '').trim()))
+        .filter(Boolean);
+      if (source.startsWith('[') && source.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(source);
+          if (Array.isArray(parsed)) return normalizeList(parsed);
+        } catch (error) {
+        }
+      }
+      return normalizeList(source.split(','));
+    },
+    previewEvidence(urls, index) {
+      const imageUrls = this.parseEvidenceUrls(urls);
+      if (!imageUrls.length) return;
+      uni.previewImage({
+        urls: imageUrls,
+        current: imageUrls[index] || imageUrls[0]
+      });
     },
     goDetail(item) {
       uni.navigateTo({
@@ -354,6 +390,20 @@ export default {
   color: #4a5568;
   line-height: 1.6;
   display: block;
+}
+
+.evidence-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.evidence-image {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 10rpx;
+  background: #f5f7fa;
 }
 
 .progress-row {
