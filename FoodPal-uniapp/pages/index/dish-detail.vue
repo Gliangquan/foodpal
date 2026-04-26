@@ -166,6 +166,19 @@ export default {
         // 忽略点赞状态同步失败，不阻塞详情展示
       }
     },
+    syncRecommendSnapshot() {
+      const key = 'foodpal_recommend_updates';
+      const raw = uni.getStorageSync(key);
+      const snapshot = raw && typeof raw === 'object' ? raw : {};
+      snapshot[this.dishId] = {
+        likeCount: this.dish.likeCount || 0,
+        favoriteCount: this.dish.favoriteCount || 0,
+        liked: !!this.dish.liked,
+        favorited: !!this.dish.favorited,
+        updatedAt: Date.now()
+      };
+      uni.setStorageSync(key, snapshot);
+    },
     async toggleLike() {
       if (!this.dishId || this.liking) return;
       this.liking = true;
@@ -173,7 +186,8 @@ export default {
         await canteenApi.toggleLike(this.dishId);
         const next = !this.dish.liked;
         this.dish.liked = next;
-        this.dish.likeCount = Math.max(0, (this.dish.likeCount || 0) + (next ? 1 : -1));
+        this.dish.likeCount = Math.max(0, Number(this.dish.likeCount || 0) + (next ? 1 : -1));
+        this.syncRecommendSnapshot();
         uni.showToast({ title: next ? '已点赞' : '已取消点赞', icon: 'none' });
       } catch (error) {
         uni.showToast({ title: error.message || '操作失败', icon: 'none' });
@@ -188,7 +202,8 @@ export default {
         await canteenApi.toggleFavorite(this.dishId);
         const next = !this.dish.favorited;
         this.dish.favorited = next;
-        this.dish.favoriteCount = Math.max(0, (this.dish.favoriteCount || 0) + (next ? 1 : -1));
+        this.dish.favoriteCount = Math.max(0, Number(this.dish.favoriteCount || 0) + (next ? 1 : -1));
+        this.syncRecommendSnapshot();
         uni.showToast({ title: next ? '已收藏' : '已取消收藏', icon: 'none' });
       } catch (error) {
         uni.showToast({ title: error.message || '操作失败', icon: 'none' });

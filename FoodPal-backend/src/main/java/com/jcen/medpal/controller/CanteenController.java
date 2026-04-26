@@ -611,19 +611,13 @@ public class CanteenController {
             scoredDishes.add(item);
         }
 
-        // 按分数排序，并在同分时优先展示点赞/收藏更高的菜品
+        // 热门推荐按点赞数优先排序，同分再按创建顺序倒序
         scoredDishes.sort((o1, o2) -> {
-            int scoreCompare = Integer.compare((Integer) o2.get("score"), (Integer) o1.get("score"));
-            if (scoreCompare != 0) {
-                return scoreCompare;
-            }
             Dish d1 = (Dish) o1.get("dish");
             Dish d2 = (Dish) o2.get("dish");
-            int interactionCompare = Integer.compare(
-                    nvl(d2.getLikeCount()) + nvl(d2.getFavoriteCount()),
-                    nvl(d1.getLikeCount()) + nvl(d1.getFavoriteCount()));
-            if (interactionCompare != 0) {
-                return interactionCompare;
+            int likeCompare = Integer.compare(nvl(d2.getLikeCount()), nvl(d1.getLikeCount()));
+            if (likeCompare != 0) {
+                return likeCompare;
             }
             return Long.compare(d2.getId() == null ? 0L : d2.getId(), d1.getId() == null ? 0L : d1.getId());
         });
@@ -2286,11 +2280,6 @@ public class CanteenController {
             // 用户偏好商户匹配 +15分
             if (dish.getMerchantId() != null && preferredMerchantIds.contains(dish.getMerchantId())) {
                 score += 15;
-            }
-
-            // 避免推荐用户已经点赞或收藏的菜品（降低分数）
-            if (likedDishIds.contains(dish.getId()) || favoriteDishIds.contains(dish.getId())) {
-                score -= 50; // 已经互动过的菜品降低推荐优先级
             }
         }
 

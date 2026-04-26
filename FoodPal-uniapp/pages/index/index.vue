@@ -265,6 +265,9 @@ export default {
     this.loadComplaintRanking();
     this.loadStatistics();
   },
+  onShow() {
+    this.loadRecommend();
+  },
   onPullDownRefresh() {
     Promise.all([
       this.loadDishes(true),
@@ -369,6 +372,23 @@ export default {
       this.statistics.availableDishes = dishes.filter(d => d.supplyStatus === 1).length;
       this.statistics.specialDishes = dishes.filter(d => d.isSpecial).length;
     },
+    applyRecommendSnapshot(list) {
+      const snapshot = uni.getStorageSync('foodpal_recommend_updates');
+      if (!snapshot || typeof snapshot !== 'object') {
+        return list;
+      }
+      return list.map((item) => {
+        const patch = snapshot[item.id];
+        if (!patch) return item;
+        return {
+          ...item,
+          likeCount: patch.likeCount,
+          favoriteCount: patch.favoriteCount,
+          liked: patch.liked,
+          favorited: patch.favorited
+        };
+      });
+    },
     async loadRecommend() {
       try {
         const page = await canteenApi.recommendDishes(10);
@@ -380,13 +400,8 @@ export default {
           idSet.add(item.id);
           uniqueList.push(item);
         }
-        uniqueList.sort((a, b) => {
-          const interactionA = Number(a.likeCount || 0) + Number(a.favoriteCount || 0);
-          const interactionB = Number(b.likeCount || 0) + Number(b.favoriteCount || 0);
-          if (interactionB !== interactionA) return interactionB - interactionA;
-          return Number(b.likeCount || 0) - Number(a.likeCount || 0);
-        });
-        this.recommendList = uniqueList;
+        this.recommendList = this.applyRecommendSnapshot(uniqueList);
+        this.resortRecommendList();
       } catch (error) {
         console.error(error);
         this.recommendList = [];
@@ -425,13 +440,20 @@ export default {
         await this.loadDishes(false);
       }
     },
+    resortRecommendList() {
+      this.recommendList = [...this.recommendList].sort((a, b) => {
+        return Number(b.likeCount || 0) - Number(a.likeCount || 0);
+      });
+    },
     async toggleLike(item) {
       try {
         await canteenApi.toggleLike(item.id);
-        item.liked = !item.liked;
-        item.likeCount = (item.likeCount || 0) + (item.liked ? 1 : -1);
+        const next = !item.liked;
+        item.liked = next;
+        item.likeCount = Math.max(0, Number(item.likeCount || 0) + (next ? 1 : -1));
+        this.resortRecommendList();
         uni.showToast({ 
-          title: item.liked ? '已点赞' : '已取消点赞', 
+          title: next ? '已点赞' : '已取消点赞', 
           icon: 'none',
           duration: 1000
         });
@@ -442,10 +464,12 @@ export default {
     async toggleFavorite(item) {
       try {
         await canteenApi.toggleFavorite(item.id);
-        item.favorited = !item.favorited;
-        item.favoriteCount = (item.favoriteCount || 0) + (item.favorited ? 1 : -1);
+        const next = !item.favorited;
+        item.favorited = next;
+        item.favoriteCount = Math.max(0, Number(item.favoriteCount || 0) + (next ? 1 : -1));
+        this.resortRecommendList();
         uni.showToast({ 
-          title: item.favorited ? '已收藏' : '已取消收藏', 
+          title: next ? '已收藏' : '已取消收藏', 
           icon: 'none',
           duration: 1000
         });
