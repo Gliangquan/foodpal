@@ -203,6 +203,7 @@
 
 <script>
 import { canteenApi } from '@/utils/api.js';
+import { normalizeFileUrl } from '@/utils/format.js';
 
 export default {
   data() {
@@ -373,16 +374,7 @@ export default {
       return this.isSpecialNow(item) ? (item.specialPrice || item.dishPrice) : item.dishPrice;
     },
     getImageUrl(imageUrl) {
-      if (!imageUrl || imageUrl.trim() === '') {
-        return '';
-      }
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        return imageUrl;
-      }
-      if (imageUrl.startsWith('/')) {
-        return imageUrl;
-      }
-      return '/api/file/preview/' + imageUrl;
+      return normalizeFileUrl(imageUrl) || this.defaultImg;
     },
     openSpecialModal(item) {
       this.specialForm.dishId = item.id;
