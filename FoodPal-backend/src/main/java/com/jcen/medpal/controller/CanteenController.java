@@ -255,6 +255,42 @@ public class CanteenController {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "商户不存在");
         }
 
+        boolean auditOnlyRequest = merchantProfile.getStatus() == null
+                && merchantProfile.getUserId() == null
+                && StringUtils.isBlank(merchantProfile.getMerchantName())
+                && StringUtils.isBlank(merchantProfile.getContactName())
+                && StringUtils.isBlank(merchantProfile.getContactPhone())
+                && StringUtils.isBlank(merchantProfile.getAvatar())
+                && StringUtils.isBlank(merchantProfile.getBusinessHours())
+                && StringUtils.isBlank(merchantProfile.getLocation())
+                && StringUtils.isBlank(merchantProfile.getDescription())
+                && StringUtils.isNotBlank(merchantProfile.getAuditStatus());
+
+        if (merchantProfile.getUserId() != null && !merchantProfile.getUserId().equals(existed.getUserId())) {
+            User bindUser = userService.getById(merchantProfile.getUserId());
+            if (bindUser == null || bindUser.getIsDelete() != 0) {
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "关联商户账号不存在");
+            }
+            if (!"merchant".equalsIgnoreCase(bindUser.getUserRole())) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "只能绑定商户角色账号");
+            }
+            MerchantProfile duplicated = merchantProfileService.lambdaQuery()
+                    .eq(MerchantProfile::getUserId, merchantProfile.getUserId())
+                    .eq(MerchantProfile::getIsDelete, 0)
+                    .ne(MerchantProfile::getId, existed.getId())
+                    .one();
+            if (duplicated != null) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "该商户账号已绑定其他商户");
+            }
+            existed.setUserId(merchantProfile.getUserId());
+            if (StringUtils.isBlank(merchantProfile.getContactName())) {
+                existed.setContactName(StringUtils.defaultIfBlank(existed.getContactName(), bindUser.getUserName()));
+            }
+            if (StringUtils.isBlank(merchantProfile.getContactPhone())) {
+                existed.setContactPhone(StringUtils.defaultIfBlank(existed.getContactPhone(), bindUser.getUserPhone()));
+            }
+        }
+
         if (merchantProfile.getStatus() != null) {
             existed.setStatus(merchantProfile.getStatus());
         }
@@ -262,30 +298,34 @@ public class CanteenController {
             existed.setAuditStatus(merchantProfile.getAuditStatus());
         }
         if (StringUtils.isNotBlank(merchantProfile.getMerchantName())) {
-            existed.setMerchantName(merchantProfile.getMerchantName());
+            existed.setMerchantName(merchantProfile.getMerchantName().trim());
         }
-        if (StringUtils.isNotBlank(merchantProfile.getContactName())) {
-            existed.setContactName(merchantProfile.getContactName());
+        if (merchantProfile.getContactName() != null) {
+            existed.setContactName(StringUtils.trimToNull(merchantProfile.getContactName()));
         }
-        if (StringUtils.isNotBlank(merchantProfile.getContactPhone())) {
-            existed.setContactPhone(merchantProfile.getContactPhone());
+        if (merchantProfile.getContactPhone() != null) {
+            existed.setContactPhone(StringUtils.trimToNull(merchantProfile.getContactPhone()));
         }
-        if (StringUtils.isNotBlank(merchantProfile.getAvatar())) {
-            existed.setAvatar(merchantProfile.getAvatar());
+        if (merchantProfile.getAvatar() != null) {
+            existed.setAvatar(StringUtils.trimToNull(merchantProfile.getAvatar()));
         }
-        if (StringUtils.isNotBlank(merchantProfile.getBusinessHours())) {
-            existed.setBusinessHours(merchantProfile.getBusinessHours());
+        if (merchantProfile.getBusinessHours() != null) {
+            existed.setBusinessHours(StringUtils.trimToNull(merchantProfile.getBusinessHours()));
         }
-        if (StringUtils.isNotBlank(merchantProfile.getLocation())) {
-            existed.setLocation(merchantProfile.getLocation());
+        if (merchantProfile.getLocation() != null) {
+            existed.setLocation(StringUtils.trimToNull(merchantProfile.getLocation()));
         }
-        if (StringUtils.isNotBlank(merchantProfile.getDescription())) {
-            existed.setDescription(merchantProfile.getDescription());
+        if (merchantProfile.getDescription() != null) {
+            existed.setDescription(StringUtils.trimToNull(merchantProfile.getDescription()));
         }
 
-        if ("approved".equals(existed.getAuditStatus())) {
-            applyPendingMerchantData(existed);
-        } else if ("rejected".equals(existed.getAuditStatus())) {
+        if (auditOnlyRequest) {
+            if ("approved".equals(existed.getAuditStatus())) {
+                applyPendingMerchantData(existed);
+            } else if ("rejected".equals(existed.getAuditStatus())) {
+                existed.setPendingData(null);
+            }
+        } else {
             existed.setPendingData(null);
         }
 

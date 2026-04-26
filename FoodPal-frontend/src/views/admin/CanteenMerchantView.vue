@@ -801,10 +801,11 @@ const openCreate = async () => {
 };
 
 const openEdit = async (record: MerchantProfile) => {
+  resetForm();
   createdAccount.userAccount = '';
   createdAccount.password = DEFAULT_MERCHANT_PASSWORD;
   await loadMerchantUsers();
-  Object.assign(form, record);
+  Object.assign(form, JSON.parse(JSON.stringify(record)));
   modalOpen.value = true;
 };
 
@@ -813,11 +814,12 @@ const submit = async () => {
 
   submitting.value = true;
   try {
+    const payload = JSON.parse(JSON.stringify(form));
     if (form.id) {
-      await updateMerchant(form);
+      await updateMerchant(payload);
       message.success('商户更新成功');
     } else {
-      await saveMerchant(form);
+      await saveMerchant(payload);
       message.success('商户创建成功');
     }
     modalOpen.value = false;
