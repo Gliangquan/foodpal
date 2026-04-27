@@ -75,7 +75,7 @@
             v-for="(url, index) in rectifyForm.evidenceFiles"
             :key="`rectify-${index}`"
             class="evidence-image"
-            :src="url"
+            :src="getImageUrl(url)"
             mode="aspectFill"
             @tap="previewImageList(rectifyForm.evidenceFiles, index)"
           />
