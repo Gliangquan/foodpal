@@ -178,8 +178,13 @@ const handleLogin = async () => {
     } else {
       message.error(response.message || '登录失败');
     }
-  } catch (error) {
-    message.error('登录失败，请稍后重试');
+  } catch (error: any) {
+    const errorMessage = error?.message || error?.response?.data?.message || '';
+    if (errorMessage.includes('账号已被禁用') || errorMessage.includes('账号被禁用')) {
+      message.error('账号被禁用，请联系管理处理');
+    } else {
+      message.error(errorMessage || '登录失败，请稍后重试');
+    }
   } finally {
     loading.value = false;
   }

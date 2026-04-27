@@ -59,12 +59,17 @@ request.interceptors.response.use(
       const { status, data } = error.response;
       
       switch (status) {
-        case 401:
-          message.error('未登录或登录已过期');
-          // 可以在这里处理登出逻辑
+        case 401: {
+          const backendMessage = data?.message || '';
+          const disabledMessage = backendMessage.includes('账号已被禁用') || backendMessage.includes('账号被禁用');
+          message.error(disabledMessage ? '账号被禁用，请联系管理处理' : '未登录或登录已过期');
           localStorage.removeItem('user');
-          window.location.href = '/login';
+          localStorage.removeItem('token');
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
           break;
+        }
         case 403:
           message.error('没有权限访问');
           break;

@@ -270,6 +270,7 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
                 Long userId = jwtTokenUtils.getUserIdFromToken(token);
                 currentUser = this.getById(userId);
                 if (currentUser != null) {
+                    ensureUserEnabled(currentUser, request);
                     return currentUser;
                 }
             }
@@ -282,7 +283,17 @@ public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implement
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
+        ensureUserEnabled(currentUser, request);
         return currentUser;
+    }
+
+    private void ensureUserEnabled(User user, HttpServletRequest request) {
+        if (user != null && user.getStatus() != null && user.getStatus() == 0) {
+            if (request != null) {
+                request.getSession().removeAttribute(USER_LOGIN_STATE);
+            }
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "账号被禁用，请联系管理处理");
+        }
     }
 
     /**

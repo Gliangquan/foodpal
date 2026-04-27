@@ -332,7 +332,7 @@
       </a-form>
     </a-modal>
 
-    <a-modal v-model:open="auditModalOpen" title="审核商户信息" width="900px" :footer="null">
+    <a-modal v-model:open="auditModalOpen" title="审核商户信息" width="980px" :footer="null">
       <a-alert
         message="商户提交了信息修改申请，请对比审核"
         type="info"
@@ -340,21 +340,39 @@
         style="margin-bottom: 16px"
       />
 
-      <a-table :columns="compareColumns" :data-source="compareData" :pagination="false" bordered>
+      <a-table
+        :columns="compareColumns"
+        :data-source="compareData"
+        :pagination="false"
+        bordered
+        :scroll="{ x: 860 }"
+        table-layout="fixed"
+        size="small"
+      >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'current'">
-            <span v-if="column.dataIndex === 'avatar'">
-              <a-image v-if="record.current" :src="record.current" :width="60" />
+            <span v-if="record.dataIndex === 'avatar'">
+              <a-image
+                v-if="record.current"
+                :src="record.current"
+                :width="120"
+                :preview="true"
+              />
               <span v-else>-</span>
             </span>
-            <span v-else>{{ record.current || '-' }}</span>
+            <span v-else class="audit-compare-text">{{ record.current || '-' }}</span>
           </template>
           <template v-if="column.key === 'pending'">
-            <span v-if="column.dataIndex === 'avatar'">
-              <a-image v-if="record.pending" :src="record.pending" :width="60" />
+            <span v-if="record.dataIndex === 'avatar'">
+              <a-image
+                v-if="record.pending"
+                :src="record.pending"
+                :width="120"
+                :preview="true"
+              />
               <span v-else>-</span>
             </span>
-            <span v-else :style="record.changed ? 'color: #ff4d4f; font-weight: 500' : ''">
+            <span v-else :class="['audit-compare-text', { 'is-changed': record.changed }]">
               {{ record.pending || '-' }}
             </span>
           </template>
@@ -381,6 +399,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { message } from 'ant-design-vue';
 import { PlusOutlined, DeleteOutlined, ReloadOutlined, EditOutlined, CopyOutlined } from '@ant-design/icons-vue';
 import ImageUpload from '../../components/ImageUpload.vue';
+import { normalizeImageUrl } from '../../utils/image';
 import { addUser, deleteMerchant, listMerchants, saveMerchant, updateMerchant, listUserVOByPage, type MerchantProfile } from '../../api';
 
 interface MerchantUserOption {
@@ -904,8 +923,12 @@ const openAudit = (record: MerchantProfile) => {
   ];
 
   compareData.value = fields.map(field => {
-    const currentValue = (record as any)[field.key];
-    const pendingValue = pendingData[field.key];
+    const currentValue = field.key === 'avatar'
+      ? normalizeImageUrl((record as any)[field.key])
+      : (record as any)[field.key];
+    const pendingValue = field.key === 'avatar'
+      ? normalizeImageUrl(pendingData[field.key])
+      : pendingData[field.key];
     return {
       field: field.label,
       current: currentValue,
@@ -1077,5 +1100,18 @@ onMounted(async () => {
   color: #8c8c8c;
   font-size: 12px;
   line-height: 20px;
+}
+
+.audit-compare-text {
+  display: inline-block;
+  max-width: 260px;
+  white-space: normal;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+.audit-compare-text.is-changed {
+  color: #ff4d4f;
+  font-weight: 500;
 }
 </style>
