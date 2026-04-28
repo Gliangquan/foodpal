@@ -8,12 +8,6 @@
           <a-input-search v-model:value="keyword" placeholder="搜索商户名称、联系人或电话" allow-clear @search="refreshList" />
         </a-col>
         <a-col :xs="24" :sm="12" :md="4">
-          <a-select v-model:value="statusFilter" placeholder="状态筛选" allow-clear @change="refreshList" style="width: 100%">
-            <a-select-option :value="1">启用</a-select-option>
-            <a-select-option :value="0">停用</a-select-option>
-          </a-select>
-        </a-col>
-        <a-col :xs="24" :sm="12" :md="4">
           <a-select v-model:value="auditStatusFilter" placeholder="审核状态" allow-clear @change="refreshList" style="width: 100%">
             <a-select-option value="pending">待审核</a-select-option>
             <a-select-option value="approved">已通过</a-select-option>
@@ -41,9 +35,6 @@
       <a-row :gutter="16" style="margin-bottom: 16px">
         <a-col :xs="12" :sm="6">
           <a-statistic title="总商户数" :value="statistics.totalMerchants" />
-        </a-col>
-        <a-col :xs="12" :sm="6">
-          <a-statistic title="启用中" :value="statistics.activeMerchants" />
         </a-col>
         <a-col :xs="12" :sm="6">
           <a-statistic title="待审核" :value="statistics.pendingMerchants" />
@@ -102,11 +93,6 @@
               <div class="contact-name">{{ getContactDisplay(record).name }}</div>
               <div class="contact-meta">{{ getContactDisplay(record).phone }}</div>
             </div>
-          </template>
-          <template v-else-if="column.key === 'status'">
-            <a-tag :color="record.status === 1 ? 'green' : 'red'">
-              {{ record.status === 1 ? '启用' : '停用' }}
-            </a-tag>
           </template>
           <template v-else-if="column.key === 'auditStatus'">
             <a-space direction="vertical" :size="4">
@@ -279,14 +265,6 @@
               </a-select>
             </a-form-item>
           </a-col>
-          <a-col :span="12">
-            <a-form-item label="状态">
-              <a-select v-model:value="form.status">
-                <a-select-option :value="1">启用</a-select-option>
-                <a-select-option :value="0">停用</a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
         </a-row>
 
         <a-form-item label="描述" extra="可填写档口特色、主营餐品或补充说明，方便后台和前台理解商户信息。">
@@ -420,7 +398,6 @@ const columns = [
   { title: '营业时间', dataIndex: 'businessHours', key: 'businessHours', width: 150 },
   { title: '位置', dataIndex: 'location', key: 'location', width: 150 },
   { title: '审核状态', dataIndex: 'auditStatus', key: 'auditStatus', width: 100 },
-  { title: '状态', dataIndex: 'status', key: 'status', width: 100 },
   { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 160 },
   { title: '操作', key: 'action', width: 150, fixed: 'right' },
 ];
